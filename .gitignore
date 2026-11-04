@@ -1,17 +1,17 @@
 node_modules/
 .env
-.env.test
-*.js
-*.js.map
-*.d.ts
-*.d.ts.map
 dist/
 
 .idea/
 
 .env.*
 !.env.example
+!.env.test
 *.log
 .DS_Store
-coverage/tests/**/*.js
-tests/**/*.js
+
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+!jest.config.js
