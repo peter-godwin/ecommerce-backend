@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.test
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+dist/
+
+.idea/
+
+.env.*
+!.env.example
+*.log
+.DS_Store
+coverage/
