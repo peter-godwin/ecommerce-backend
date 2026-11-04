@@ -32,14 +32,11 @@ services:
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: |
-        mongosh --quiet --eval "
-          try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'db:27017'}]}) }
-        "
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 5s
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
 volumes:
