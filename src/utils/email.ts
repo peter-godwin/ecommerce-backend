@@ -8,7 +8,7 @@ const createTransporter = () => {
     return nodemailer.createTransport({
         host: env.email.host,
         port: env.email.port,
-        // secure: fasle,
+        // secure: false,
         auth: {
             user: env.email.user,
             pass: env.email.password,

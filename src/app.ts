@@ -1,14 +1,4 @@
-import crypto from "crypto";
-
-// Ensure global crypto is defined (required by mongodb driver in Node < 20)
-const globalScope = globalThis as unknown as { crypto?: object };
-const nodeGlobal = global as unknown as { crypto?: object };
-if (typeof globalScope.crypto === "undefined" || typeof nodeGlobal.crypto === "undefined") {
-    const webcrypto = (crypto as unknown as { webcrypto?: object }).webcrypto || (crypto as unknown as object);
-    globalScope.crypto = webcrypto;
-    nodeGlobal.crypto = webcrypto;
-}
-
+import './utils/globalCrypto';
 import express from "express";
 import cors from "cors";
 import v1Router from "./routes/v1";
@@ -117,7 +107,5 @@ app.use((req, res) => {
 });
 
 app.use(errorMiddleware);
-
-const PORT = process.env.PORT || 3000;
 
 export default app;
