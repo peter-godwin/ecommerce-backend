@@ -109,7 +109,6 @@ UserSchema.virtual('isLocked').get(function() {
     return !!(this.lockUntil && this.lockUntil > new Date());
 });
 
-UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ isActive: 1 });
 
 UserSchema.pre("save", async function () {

@@ -67,7 +67,7 @@ export const resendVerificationEmail = asyncHandler(async (req: Request, res: Re
         return;
     }
 
-    const result = await authService.resendVerificationEmail(email);
+    const result = await authService.resendVerificationEmail(email, req.ip);
     res.status(200).json(result);
 });
 
