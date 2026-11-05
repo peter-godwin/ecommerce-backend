@@ -149,13 +149,49 @@ export const verifyEmail = async (verificationToken: string) => {
     return { message: 'Email verified successfully!' };
 };
 
-export const resendVerificationEmail = async (email: string) => {
+const VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000;
+const VERIFICATION_RESEND_IP_LIMIT = 5;
+const VERIFICATION_RESEND_WINDOW_MS = 60 * 60 * 1000;
+const verificationResendRateLimits = new Map<string, { count: number; resetAt: number }>();
+const verificationResendCooldowns = new Map<string, number>();
+
+const consumeVerificationResendRateLimit = (key: string): boolean => {
+    const now = Date.now();
+    const entry = verificationResendRateLimits.get(key);
+    if (!entry || entry.resetAt < now) {
+        verificationResendRateLimits.set(key, { count: 1, resetAt: now + VERIFICATION_RESEND_WINDOW_MS });
+        return false;
+    }
+    if (entry.count >= VERIFICATION_RESEND_IP_LIMIT) {
+        return true;
+    }
+    entry.count += 1;
+    return false;
+};
+
+export const resendVerificationEmail = async (email: string, ip?: string) => {
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const user = normalizedEmail ? await User.findOne({ email: normalizedEmail }) : null;
 
-    if (!user || user.isEmailVerified) {
+    if (!user) {
         return { message: 'If an unverified account exists, a verification email has been sent.' };
     }
+
+    if (user.isEmailVerified) {
+        return { message: 'Your email is already verified.' };
+    }
+
+    const rateLimitKey = ip ? `${ip}:${normalizedEmail}` : normalizedEmail;
+    const rateLimited = consumeVerificationResendRateLimit(rateLimitKey);
+    if (rateLimited) {
+        throw new AuthError('Too many verification resend requests. Please try again later.', 429);
+    }
+
+    const lastSentAt = verificationResendCooldowns.get(normalizedEmail);
+    if (lastSentAt && Date.now() - lastSentAt < VERIFICATION_RESEND_COOLDOWN_MS) {
+        throw new AuthError('Please wait before requesting another verification email.', 429);
+    }
+    verificationResendCooldowns.set(normalizedEmail, Date.now());
 
     const verificationToken = user.getEmailVerificationToken();
     await user.save({ validateBeforeSave: false });
